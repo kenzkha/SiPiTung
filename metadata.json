@@ -1,0 +1,6 @@
+{
+  "name": "PintarHitung",
+  "description": "Aplikasi belajar matematika interaktif untuk anak SD kelas 1-6 dengan hitung bersusun, game edukasi, sistem poin reward, dan laporan progres orang tua secara real-time.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

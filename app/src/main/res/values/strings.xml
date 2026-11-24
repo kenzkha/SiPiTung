@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">PintarHitung</string>
+    <string name="nav_home">Beranda</string>
+    <string name="nav_learn">Belajar</string>
+    <string name="nav_play">Main</string>
+    <string name="nav_parent">Orang Tua</string>
+    <string name="auth_title">Belajar Matematika Jadi Seru!</string>
+    <string name="auth_subtitle">Latihan hitung bersusun kelas 1–6 SD, game edukasi penuh bintang, dan laporan progres real-time untuk orang tua.</string>
+    <string name="auth_google_button">Masuk dengan Google</string>
+    <string name="auth_signing_in">Menghubungkan akun Google…</string>
+    <string name="auth_feature_worksheet">Hitung Bersusun Interaktif (Kelas 1–6)</string>
+    <string name="auth_feature_games">Game Edukasi &amp; Sistem Poin Bintang</string>
+    <string name="auth_feature_parent">Laporan Progres Real-Time Orang Tua</string>
+    <string name="parent_live_badge">Tersinkron Real-Time</string>
+    <string name="sign_out_label">Keluar Akun</string>
+</resources>

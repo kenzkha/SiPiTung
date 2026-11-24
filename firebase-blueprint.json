@@ -1,0 +1,204 @@
+{
+  "entities": {
+    "ChildProfile": {
+      "title": "ChildProfile",
+      "description": "Learning profile, grade level (1-6), stars, XP, streaks, badges, and avatar items for an elementary student.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "childName": {
+          "type": "string",
+          "description": "Child display name (1-50 chars)."
+        },
+        "grade": {
+          "type": "integer",
+          "description": "Indonesian elementary grade level from 1 to 6."
+        },
+        "totalStars": {
+          "type": "integer",
+          "description": "Spendable and accumulated reward stars."
+        },
+        "totalXp": {
+          "type": "integer",
+          "description": "Cumulative experience points for leveling."
+        },
+        "streakDays": {
+          "type": "integer",
+          "description": "Consecutive active learning days."
+        },
+        "totalQuestionsSolved": {
+          "type": "integer",
+          "description": "Total math questions answered."
+        },
+        "totalCorrectAnswers": {
+          "type": "integer",
+          "description": "Total math questions answered correctly."
+        },
+        "unlockedBadges": {
+          "type": "array",
+          "description": "Bounded list of unlocked achievement badge IDs (max 20)."
+        },
+        "ownedAvatarItems": {
+          "type": "array",
+          "description": "Bounded list of purchased reward item IDs (max 30)."
+        },
+        "equippedAvatar": {
+          "type": "string",
+          "description": "Currently equipped reward item or mascot badge key."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "childName",
+        "grade",
+        "totalStars",
+        "totalXp",
+        "streakDays",
+        "totalQuestionsSolved",
+        "totalCorrectAnswers",
+        "unlockedBadges",
+        "ownedAvatarItems",
+        "equippedAvatar",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "LearningSession": {
+      "title": "LearningSession",
+      "description": "Completed interactive math worksheet or educational game session reported in real time to parents.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["WORKSHEET", "BALLOON_GAME", "SPEED_SPRINT"],
+          "description": "Activity mode."
+        },
+        "topic": {
+          "type": "string",
+          "enum": ["PENJUMLAHAN", "PENGURANGAN", "PERKALIAN", "PEMBAGIAN", "CAMPURAN"],
+          "description": "Elementary math topic."
+        },
+        "grade": {
+          "type": "integer",
+          "description": "Grade level (1-6) of the session."
+        },
+        "totalQuestions": {
+          "type": "integer",
+          "description": "Number of questions in the session (1-100)."
+        },
+        "correctAnswers": {
+          "type": "integer",
+          "description": "Number of correct answers (0-100)."
+        },
+        "starsEarned": {
+          "type": "integer",
+          "description": "Reward stars earned in this session (0-500)."
+        },
+        "durationSeconds": {
+          "type": "integer",
+          "description": "Elapsed duration in seconds (0-3600)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "mode",
+        "topic",
+        "grade",
+        "totalQuestions",
+        "correctAnswers",
+        "starsEarned",
+        "durationSeconds",
+        "createdAt"
+      ]
+    },
+    "ParentReward": {
+      "title": "ParentReward",
+      "description": "Custom real-world reward configured by parents that children can redeem with earned stars.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "title": {
+          "type": "string",
+          "description": "Reward title (1-60 chars)."
+        },
+        "starCost": {
+          "type": "integer",
+          "description": "Stars required to redeem (10-10000)."
+        },
+        "iconKey": {
+          "type": "string",
+          "description": "Icon identifier (1-30 chars)."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["AVAILABLE", "REDEEMED", "FULFILLED"],
+          "description": "Reward redemption lifecycle status."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "title",
+        "starCost",
+        "iconKey",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/ChildProfile"
+      },
+      "description": "Stores child profile, grade, points, badges, and avatar inventory scoped to the authenticated family account."
+    },
+    "/users/{userId}/sessions/{sessionId}": {
+      "schema": {
+        "$ref": "#/entities/LearningSession"
+      },
+      "description": "Stores real-time learning and game session records for parent progress reporting."
+    },
+    "/users/{userId}/rewards/{rewardId}": {
+      "schema": {
+        "$ref": "#/entities/ParentReward"
+      },
+      "description": "Stores parent-configured custom rewards and redemption status."
+    }
+  }
+}

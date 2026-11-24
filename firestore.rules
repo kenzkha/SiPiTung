@@ -1,0 +1,184 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Hardened Global Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Entity 1: ChildProfile Validation Helper
+    function isValidChildProfile(data) {
+      return data.userId is string && data.userId == request.auth.uid && data.userId.size() <= 128 &&
+             data.childName is string && data.childName.size() >= 1 && data.childName.size() <= 50 &&
+             data.grade is int && data.grade >= 1 && data.grade <= 6 &&
+             data.totalStars is int && data.totalStars >= 0 && data.totalStars <= 1000000 &&
+             data.totalXp is int && data.totalXp >= 0 && data.totalXp <= 10000000 &&
+             data.streakDays is int && data.streakDays >= 0 && data.streakDays <= 3650 &&
+             data.totalQuestionsSolved is int && data.totalQuestionsSolved >= 0 && data.totalQuestionsSolved <= 1000000 &&
+             data.totalCorrectAnswers is int && data.totalCorrectAnswers >= 0 && data.totalCorrectAnswers <= data.totalQuestionsSolved &&
+             data.unlockedBadges is list && data.unlockedBadges.size() <= 20 &&
+             (data.unlockedBadges.size() == 0 || data.unlockedBadges[0] is string) &&
+             data.ownedAvatarItems is list && data.ownedAvatarItems.size() <= 30 &&
+             (data.ownedAvatarItems.size() == 0 || data.ownedAvatarItems[0] is string) &&
+             data.equippedAvatar is string && data.equippedAvatar.size() >= 1 && data.equippedAvatar.size() <= 40 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    // Entity 2: LearningSession Validation Helper
+    function isValidLearningSession(data) {
+      return data.userId is string && data.userId == request.auth.uid && data.userId.size() <= 128 &&
+             data.mode is string && data.mode in ['WORKSHEET', 'BALLOON_GAME', 'SPEED_SPRINT'] &&
+             data.topic is string && data.topic in ['PENJUMLAHAN', 'PENGURANGAN', 'PERKALIAN', 'PEMBAGIAN', 'CAMPURAN'] &&
+             data.grade is int && data.grade >= 1 && data.grade <= 6 &&
+             data.totalQuestions is int && data.totalQuestions >= 1 && data.totalQuestions <= 100 &&
+             data.correctAnswers is int && data.correctAnswers >= 0 && data.correctAnswers <= data.totalQuestions &&
+             data.starsEarned is int && data.starsEarned >= 0 && data.starsEarned <= 500 &&
+             data.durationSeconds is int && data.durationSeconds >= 0 && data.durationSeconds <= 3600 &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    // Entity 3: ParentReward Validation Helper
+    function isValidParentReward(data) {
+      return data.userId is string && data.userId == request.auth.uid && data.userId.size() <= 128 &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 60 &&
+             data.starCost is int && data.starCost >= 10 && data.starCost <= 10000 &&
+             data.iconKey is string && data.iconKey.size() >= 1 && data.iconKey.size() <= 30 &&
+             data.status is string && data.status in ['AVAILABLE', 'REDEEMED', 'FULFILLED'] &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    // Collection 1: /users/{userId}
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow list: if false;
+
+      allow create: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       incoming().keys().hasAll([
+                         'userId', 'childName', 'grade', 'totalStars', 'totalXp',
+                         'streakDays', 'totalQuestionsSolved', 'totalCorrectAnswers',
+                         'unlockedBadges', 'ownedAvatarItems', 'equippedAvatar',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'childName', 'grade', 'totalStars', 'totalXp',
+                         'streakDays', 'totalQuestionsSolved', 'totalCorrectAnswers',
+                         'unlockedBadges', 'ownedAvatarItems', 'equippedAvatar',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidChildProfile(incoming());
+
+      allow update: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       isValidChildProfile(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       (
+                         // Action 1: Update child settings (name, grade)
+                         incoming().diff(existing()).affectedKeys().hasOnly(['childName', 'grade', 'updatedAt']) ||
+                         // Action 2: Record progress after worksheet or game session
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'totalStars', 'totalXp', 'streakDays',
+                           'totalQuestionsSolved', 'totalCorrectAnswers',
+                           'unlockedBadges', 'updatedAt'
+                         ]) ||
+                         // Action 3: Purchase or equip avatar reward item
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'totalStars', 'ownedAvatarItems', 'equippedAvatar', 'updatedAt'
+                         ]) ||
+                         // Action 4: Spend stars on parent reward
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'totalStars', 'updatedAt'
+                         ])
+                       );
+
+      allow delete: if isOwner(userId) && isValidId(userId);
+
+      // Collection 2: /users/{userId}/sessions/{sessionId}
+      match /sessions/{sessionId} {
+        allow get: if isOwner(userId) && isValidId(sessionId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(sessionId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'mode', 'topic', 'grade', 'totalQuestions',
+                           'correctAnswers', 'starsEarned', 'durationSeconds', 'createdAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'mode', 'topic', 'grade', 'totalQuestions',
+                           'correctAnswers', 'starsEarned', 'durationSeconds', 'createdAt'
+                         ]) &&
+                         isValidLearningSession(incoming());
+
+        // Learning session records are immutable audit logs for parent reporting
+        allow update: if false;
+        allow delete: if isOwner(userId) && isValidId(sessionId);
+      }
+
+      // Collection 3: /users/{userId}/rewards/{rewardId}
+      match /rewards/{rewardId} {
+        allow get: if isOwner(userId) && isValidId(rewardId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(rewardId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'title', 'starCost', 'iconKey', 'status', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'title', 'starCost', 'iconKey', 'status', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().status == 'AVAILABLE' &&
+                         isValidParentReward(incoming());
+
+        allow update: if isOwner(userId) &&
+                         isValidId(rewardId) &&
+                         isValidParentReward(incoming()) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         existing().status != 'FULFILLED' &&
+                         (
+                           // Action 1: Child redeems an AVAILABLE reward
+                           (existing().status == 'AVAILABLE' &&
+                            incoming().status == 'REDEEMED' &&
+                            incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])) ||
+                           // Action 2: Parent fulfills a REDEEMED reward (terminal state)
+                           (existing().status == 'REDEEMED' &&
+                            incoming().status == 'FULFILLED' &&
+                            incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])) ||
+                           // Action 3: Parent edits an AVAILABLE reward
+                           (existing().status == 'AVAILABLE' &&
+                            incoming().status == 'AVAILABLE' &&
+                            incoming().diff(existing()).affectedKeys().hasOnly(['title', 'starCost', 'iconKey', 'updatedAt']))
+                         );
+
+        allow delete: if isOwner(userId) && isValidId(rewardId);
+      }
+    }
+  }
+}
