@@ -70,6 +70,7 @@ import com.example.data.LearningSession
 import com.example.data.MathTopic
 import com.example.data.ParentReward
 import com.example.data.RewardStatus
+import com.example.data.curriculumPhaseForGrade
 import com.example.ui.theme.PintarTheme
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
@@ -164,7 +165,7 @@ fun ParentReportScreen(
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
-                        text = "${profile.childName} • Kelas ${profile.gradeInt} SD",
+                        text = "${profile.childName} • Kelas ${profile.gradeInt} SD (${curriculumPhaseForGrade(profile.gradeInt)})",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

@@ -39,6 +39,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,14 +49,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.credentials.CredentialManager
 import com.example.R
+import com.example.ui.components.AsyncDrawableImage
 import com.example.ui.theme.PintarTheme
+import kotlinx.coroutines.delay
 
 @Composable
 fun AuthScreen(
@@ -70,6 +72,9 @@ fun AuthScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
+        // Let MainActivity finish its first-frame SurfaceSyncGroup transaction before invoking CredentialManager
+        withFrameNanos { }
+        delay(250L)
         attemptAutoSignIn(
             context = context,
             credentialManager = credentialManager,
@@ -116,9 +121,11 @@ fun AuthScreen(
                 shadowElevation = 6.dp,
                 modifier = Modifier.size(138.dp)
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.img_mascot_buddy_1795489344526),
+                AsyncDrawableImage(
+                    resId = R.drawable.img_mascot_buddy_1795489344526,
                     contentDescription = "Maskot Burung Hantu PintarHitung",
+                    targetWidthPx = 320,
+                    targetHeightPx = 320,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxSize()

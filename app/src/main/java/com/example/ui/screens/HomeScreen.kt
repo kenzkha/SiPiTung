@@ -65,11 +65,15 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.rounded.AutoStories
+import androidx.compose.material.icons.rounded.Category
+import androidx.compose.material.icons.rounded.Extension
+import androidx.compose.material.icons.rounded.PieChart
 import com.example.R
+import com.example.data.ActivityMode
 import com.example.data.AvatarShopItem
 import com.example.data.ChildProfile
 import com.example.data.MathProblemGenerator
@@ -77,6 +81,8 @@ import com.example.data.MathTopic
 import com.example.data.ParentReward
 import com.example.data.RewardCatalog
 import com.example.data.RewardStatus
+import com.example.data.curriculumPhaseForGrade
+import com.example.ui.components.AsyncDrawableImage
 import com.example.ui.theme.PintarTheme
 
 @Composable
@@ -85,6 +91,7 @@ fun HomeScreen(
     rewards: List<ParentReward>,
     onSelectGrade: (Int) -> Unit,
     onStartWorksheet: (MathTopic) -> Unit,
+    onOpenLearningMode: (ActivityMode) -> Unit,
     onOpenGames: () -> Unit,
     onPurchaseOrEquipAvatar: (AvatarShopItem) -> Unit,
     onRedeemParentReward: (ParentReward) -> Unit,
@@ -121,9 +128,11 @@ fun HomeScreen(
                             color = MaterialTheme.colorScheme.surface,
                             modifier = Modifier.size(56.dp)
                         ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.img_mascot_buddy_1795489344526),
+                            AsyncDrawableImage(
+                                resId = R.drawable.img_mascot_buddy_1795489344526,
                                 contentDescription = "Avatar Anak",
+                                targetWidthPx = 200,
+                                targetHeightPx = 200,
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
                                     .fillMaxSize()
@@ -191,10 +200,13 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Box(modifier = Modifier.fillMaxWidth()) {
-                    Image(
-                        painter = painterResource(id = R.drawable.img_hero_adventure_1795489344190),
+                    AsyncDrawableImage(
+                        resId = R.drawable.img_hero_adventure_1795489344190,
                         contentDescription = "Ilustrasi Petualangan Matematika",
+                        targetWidthPx = 800,
+                        targetHeightPx = 400,
                         contentScale = ContentScale.Crop,
+                        placeholderColor = Color(0xFF132247),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(176.dp)
@@ -223,7 +235,7 @@ fun HomeScreen(
                             color = extended.sunnyPill
                         ) {
                             Text(
-                                text = "Misi Harian Kelas ${profile.gradeInt}",
+                                text = "Kurikulum Merdeka • ${curriculumPhaseForGrade(profile.gradeInt)} (Kls ${profile.gradeInt})",
                                 style = MaterialTheme.typography.labelMedium,
                                 color = extended.sunnyPillContent,
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
@@ -369,11 +381,48 @@ fun HomeScreen(
             }
         }
 
-        // 4. Quick Topics for Selected Grade
+        // 4. Kurikulum Merdeka Modes Strip (Fase A / B / C)
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Mode Soal Kurikulum Merdeka",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Surface(
+                        shape = RoundedCornerShape(50),
+                        color = MaterialTheme.colorScheme.primaryContainer
+                    ) {
+                        Text(
+                            text = curriculumPhaseForGrade(profile.gradeInt),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
+                        )
+                    }
+                }
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    items(ActivityMode.learningModes) { modeItem ->
+                        CurriculumModeQuickCard(
+                            mode = modeItem,
+                            grade = profile.gradeInt,
+                            onClick = { onOpenLearningMode(modeItem) }
+                        )
+                    }
+                }
+            }
+        }
+
+        // 4b. Quick Arithmetic Topics for Hitung Bersusun
         item {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
-                    text = "Pilih Topik Latihan Cepat",
+                    text = "Latihan Cepat Hitung Bersusun",
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onBackground
                 )
@@ -611,16 +660,19 @@ private fun TopicQuickCard(
         MathTopic.PERKALIAN -> extended.starContainer to extended.starGold
         MathTopic.PEMBAGIAN -> extended.successContainer to extended.success
         MathTopic.CAMPURAN -> extended.berryContainer to extended.berry
+        MathTopic.SOAL_CERITA -> extended.coralContainer to extended.coral
+        MathTopic.PECAHAN -> extended.successContainer to extended.success
+        MathTopic.GEOMETRI -> extended.starContainer to extended.starGold
+        MathTopic.POLA_ALJABAR -> extended.berryContainer to extended.berry
     }
 
     Surface(
+        onClick = onClick,
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.5.dp, extended.cardBorder),
         modifier = Modifier
             .width(114.dp)
-            .clip(RoundedCornerShape(20.dp))
-            .clickable(onClick = onClick)
             .testTag("home_topic_${topic.code.lowercase()}")
     ) {
         Column(
@@ -660,13 +712,11 @@ private fun ShopTabButton(
 ) {
     val extended = PintarTheme.extended
     Surface(
+        onClick = onClick,
         shape = RoundedCornerShape(14.dp),
         color = if (selected) extended.sunnyPill else MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.5.dp, if (selected) extended.starGold else extended.cardBorder),
-        modifier = modifier
-            .height(44.dp)
-            .clip(RoundedCornerShape(14.dp))
-            .clickable(onClick = onClick)
+        modifier = modifier.height(44.dp)
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(
@@ -880,6 +930,95 @@ fun iconForRewardKey(key: String): ImageVector = when (key) {
     "verified" -> Icons.Rounded.Verified
     "star" -> Icons.Rounded.Star
     "sports_esports" -> Icons.Rounded.SportsEsports
+    "school" -> Icons.Rounded.School
     "owl" -> Icons.Rounded.AutoAwesome
     else -> Icons.Rounded.CardGiftcard
 }
+
+@Composable
+private fun CurriculumModeQuickCard(
+    mode: ActivityMode,
+    grade: Int,
+    onClick: () -> Unit
+) {
+    val extended = PintarTheme.extended
+    val (accent, container, icon, subtitle) = when (mode) {
+        ActivityMode.WORKSHEET -> Quad(
+            MaterialTheme.colorScheme.primary,
+            MaterialTheme.colorScheme.primaryContainer,
+            Icons.Rounded.Calculate,
+            "Simpan & pinjam kelas $grade"
+        )
+        ActivityMode.STORY_PROBLEM -> Quad(
+            extended.coral,
+            extended.coralContainer,
+            Icons.Rounded.AutoStories,
+            "Literasi numerasi & AKM"
+        )
+        ActivityMode.FRACTION_COMPARE -> Quad(
+            extended.success,
+            extended.successContainer,
+            Icons.Rounded.PieChart,
+            if (grade <= 2) "Bandingkan < = >" else if (grade <= 4) "Pecahan visual & senilai" else "Pecahan, desimal & %"
+        )
+        ActivityMode.GEOMETRY_MEASURE -> Quad(
+            extended.starGold,
+            extended.starContainer,
+            Icons.Rounded.Category,
+            if (grade <= 2) "Jam, sisi bangun & cm" else if (grade <= 4) "Keliling, luas & waktu" else "Volume & diagram data"
+        )
+        else -> Quad(
+            MaterialTheme.colorScheme.tertiary,
+            MaterialTheme.colorScheme.tertiaryContainer,
+            Icons.Rounded.Extension,
+            if (grade <= 2) "Pola loncat & kotak □" else "Deret bilangan & aljabar"
+        )
+    }
+
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(18.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.5.dp, extended.cardBorder),
+        shadowElevation = 2.dp,
+        modifier = Modifier
+            .width(156.dp)
+            .testTag("home_mode_${mode.code.lowercase()}")
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(container),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = mode.labelId,
+                    tint = accent,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+            Text(
+                text = mode.labelId,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+private data class Quad<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)

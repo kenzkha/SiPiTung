@@ -31,16 +31,16 @@ object MathProblemGenerator {
     fun topicsForGrade(grade: Int): List<MathTopic> = when (grade.coerceIn(1, 6)) {
         1 -> listOf(MathTopic.PENJUMLAHAN, MathTopic.PENGURANGAN, MathTopic.CAMPURAN)
         2 -> listOf(MathTopic.PENJUMLAHAN, MathTopic.PENGURANGAN, MathTopic.PERKALIAN, MathTopic.CAMPURAN)
-        else -> MathTopic.entries
+        else -> MathTopic.entries.filter { it.isArithmetic }
     }
 
     fun gradeCurriculumSummary(grade: Int): String = when (grade.coerceIn(1, 6)) {
-        1 -> "Bilangan 1–20, tambah & kurang dasar"
-        2 -> "Hitung bersusun 2 digit (simpan & pinjam), kali 1–5"
-        3 -> "Bersusun 3 digit, perkalian 1–10 & pembagian dasar"
-        4 -> "Bilangan ribuan, perkalian 2×1 digit & pembagian"
-        5 -> "Operasi ribuan, perkalian 2×2 digit & campuran"
-        else -> "Tantangan bilangan besar, kali-bagi & campuran SD"
+        1 -> "Fase A: Bilangan 1–20, nilai tempat, pola loncat & bangun datar"
+        2 -> "Fase A: Bersusun simpan/pinjam, waktu jam, satuan cm/kg & soal cerita"
+        3 -> "Fase B: Bersusun 3 digit, pecahan visual, keliling & pola bilangan"
+        4 -> "Fase B: Bilangan ribuan, pecahan senilai, luas bangun & sudut"
+        5 -> "Fase C: Desimal & persen, volume kubus/balok, KPK-FPB & diagram"
+        else -> "Fase C: Rasio & skala, rata-rata data, aljabar awal & soal AKM"
     }
 
     fun generateWorksheetSet(
@@ -72,7 +72,7 @@ object MathProblemGenerator {
             MathTopic.PENGURANGAN -> generateSubtraction(index, grade, random)
             MathTopic.PERKALIAN -> generateMultiplication(index, grade, random)
             MathTopic.PEMBAGIAN -> generateDivision(index, grade, random)
-            MathTopic.CAMPURAN -> generateAddition(index, grade, random)
+            else -> generateAddition(index, grade, random)
         }
     }
 
@@ -222,7 +222,7 @@ object MathProblemGenerator {
                 }
                 "${d * q} ÷ $d = ?" to q
             }
-            MathTopic.CAMPURAN -> {
+            else -> {
                 val a = random.nextInt(5, 20)
                 val b = random.nextInt(2, 10)
                 "$a + $b = ?" to (a + b)

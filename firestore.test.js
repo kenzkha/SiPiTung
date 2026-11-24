@@ -220,6 +220,40 @@ test("LearningSession: owner can create & list sessions; updates and invalid pay
   // Valid Kotlin create payload (no @DocumentId `id` key)
   await assertSucceeds(sessionsRef.doc("sess_1").set(validSessionPayload(ALICE_UID)));
 
+  // Valid Kurikulum Merdeka curriculum modes & topics
+  await assertSucceeds(
+    sessionsRef.doc("sess_story").set({
+      ...validSessionPayload(ALICE_UID),
+      mode: "STORY_PROBLEM",
+      topic: "SOAL_CERITA",
+      grade: 4,
+    })
+  );
+  await assertSucceeds(
+    sessionsRef.doc("sess_fraction").set({
+      ...validSessionPayload(ALICE_UID),
+      mode: "FRACTION_COMPARE",
+      topic: "PECAHAN",
+      grade: 3,
+    })
+  );
+  await assertSucceeds(
+    sessionsRef.doc("sess_geo").set({
+      ...validSessionPayload(ALICE_UID),
+      mode: "GEOMETRY_MEASURE",
+      topic: "GEOMETRI",
+      grade: 5,
+    })
+  );
+  await assertSucceeds(
+    sessionsRef.doc("sess_pattern").set({
+      ...validSessionPayload(ALICE_UID),
+      mode: "PATTERN_ALGEBRA",
+      topic: "POLA_ALJABAR",
+      grade: 6,
+    })
+  );
+
   // Reject extra `id` field
   await assertFails(
     sessionsRef.doc("sess_2").set({

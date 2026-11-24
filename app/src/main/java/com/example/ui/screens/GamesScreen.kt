@@ -566,14 +566,13 @@ private fun BalloonPopGame(
                                 modifier = Modifier.offset { IntOffset(0, bobOffset.roundToInt()) }
                             ) {
                                 Surface(
+                                    onClick = { pickOption(optionVal) },
                                     shape = CircleShape,
                                     color = color,
                                     shadowElevation = 6.dp,
                                     border = BorderStroke(3.dp, Color.White.copy(alpha = 0.7f)),
                                     modifier = Modifier
                                         .size(116.dp)
-                                        .clip(CircleShape)
-                                        .clickable { pickOption(optionVal) }
                                         .testTag("balloon_option_$flatIdx")
                                 ) {
                                     Box(contentAlignment = Alignment.Center) {
@@ -801,14 +800,13 @@ private fun SpeedSprintGame(
                         rowItems.forEachIndexed { colIdx, optionVal ->
                             val idx = rowIdx * 2 + colIdx
                             Surface(
+                                onClick = { answerOption(optionVal) },
                                 shape = RoundedCornerShape(20.dp),
                                 color = tileColors[idx % tileColors.size],
                                 shadowElevation = 3.dp,
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(92.dp)
-                                    .clip(RoundedCornerShape(20.dp))
-                                    .clickable { answerOption(optionVal) }
                                     .testTag("sprint_option_$idx")
                             ) {
                                 Box(contentAlignment = Alignment.Center) {

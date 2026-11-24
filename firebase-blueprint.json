@@ -87,12 +87,30 @@
         },
         "mode": {
           "type": "string",
-          "enum": ["WORKSHEET", "BALLOON_GAME", "SPEED_SPRINT"],
-          "description": "Activity mode."
+          "enum": [
+            "WORKSHEET",
+            "STORY_PROBLEM",
+            "FRACTION_COMPARE",
+            "GEOMETRY_MEASURE",
+            "PATTERN_ALGEBRA",
+            "BALLOON_GAME",
+            "SPEED_SPRINT"
+          ],
+          "description": "Activity mode aligned with Kurikulum Merdeka SD."
         },
         "topic": {
           "type": "string",
-          "enum": ["PENJUMLAHAN", "PENGURANGAN", "PERKALIAN", "PEMBAGIAN", "CAMPURAN"],
+          "enum": [
+            "PENJUMLAHAN",
+            "PENGURANGAN",
+            "PERKALIAN",
+            "PEMBAGIAN",
+            "CAMPURAN",
+            "SOAL_CERITA",
+            "PECAHAN",
+            "GEOMETRI",
+            "POLA_ALJABAR"
+          ],
           "description": "Elementary math topic."
         },
         "grade": {

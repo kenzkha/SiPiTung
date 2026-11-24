@@ -106,6 +106,7 @@ fun MainAppScaffold(
 
     val selectedTab by viewModel.selectedTab.collectAsStateWithLifecycle()
     val selectedTopic by viewModel.selectedTopic.collectAsStateWithLifecycle()
+    val selectedLearningMode by viewModel.selectedLearningMode.collectAsStateWithLifecycle()
     val profileState by viewModel.profileState.collectAsStateWithLifecycle()
     val sessionsState by viewModel.sessionsState.collectAsStateWithLifecycle()
     val rewardsState by viewModel.rewardsState.collectAsStateWithLifecycle()
@@ -259,6 +260,7 @@ fun MainAppScaffold(
                                     rewards = rewards,
                                     onSelectGrade = viewModel::updateGrade,
                                     onStartWorksheet = viewModel::openWorksheetWithTopic,
+                                    onOpenLearningMode = viewModel::openLearningMode,
                                     onOpenGames = { viewModel.selectTab(MainTab.MAIN) },
                                     onPurchaseOrEquipAvatar = viewModel::purchaseOrEquipAvatar,
                                     onRedeemParentReward = viewModel::redeemParentReward
@@ -267,6 +269,8 @@ fun MainAppScaffold(
                                 MainTab.BELAJAR -> WorksheetScreen(
                                     profile = profile,
                                     selectedTopic = selectedTopic,
+                                    selectedMode = selectedLearningMode,
+                                    onSelectMode = viewModel::selectLearningMode,
                                     onSelectTopic = viewModel::selectTopic,
                                     onSelectGrade = viewModel::updateGrade,
                                     onCompleteWorksheet = viewModel::recordSession

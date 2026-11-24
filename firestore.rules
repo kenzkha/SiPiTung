@@ -50,8 +50,8 @@ service cloud.firestore {
     // Entity 2: LearningSession Validation Helper
     function isValidLearningSession(data) {
       return data.userId is string && data.userId == request.auth.uid && data.userId.size() <= 128 &&
-             data.mode is string && data.mode in ['WORKSHEET', 'BALLOON_GAME', 'SPEED_SPRINT'] &&
-             data.topic is string && data.topic in ['PENJUMLAHAN', 'PENGURANGAN', 'PERKALIAN', 'PEMBAGIAN', 'CAMPURAN'] &&
+             data.mode is string && data.mode in ['WORKSHEET', 'STORY_PROBLEM', 'FRACTION_COMPARE', 'GEOMETRY_MEASURE', 'PATTERN_ALGEBRA', 'BALLOON_GAME', 'SPEED_SPRINT'] &&
+             data.topic is string && data.topic in ['PENJUMLAHAN', 'PENGURANGAN', 'PERKALIAN', 'PEMBAGIAN', 'CAMPURAN', 'SOAL_CERITA', 'PECAHAN', 'GEOMETRI', 'POLA_ALJABAR'] &&
              data.grade is int && data.grade >= 1 && data.grade <= 6 &&
              data.totalQuestions is int && data.totalQuestions >= 1 && data.totalQuestions <= 100 &&
              data.correctAnswers is int && data.correctAnswers >= 0 && data.correctAnswers <= data.totalQuestions &&

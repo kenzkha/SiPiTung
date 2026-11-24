@@ -10,13 +10,18 @@ enum class MathTopic(
     val code: String,
     val labelId: String,
     val shortLabel: String,
-    val symbol: String
+    val symbol: String,
+    val isArithmetic: Boolean = true
 ) {
-    PENJUMLAHAN("PENJUMLAHAN", "Penjumlahan", "Tambah", "+"),
-    PENGURANGAN("PENGURANGAN", "Pengurangan", "Kurang", "−"),
-    PERKALIAN("PERKALIAN", "Perkalian", "Kali", "×"),
-    PEMBAGIAN("PEMBAGIAN", "Pembagian", "Bagi", "÷"),
-    CAMPURAN("CAMPURAN", "Campuran", "Campur", "±");
+    PENJUMLAHAN("PENJUMLAHAN", "Penjumlahan", "Tambah", "+", true),
+    PENGURANGAN("PENGURANGAN", "Pengurangan", "Kurang", "−", true),
+    PERKALIAN("PERKALIAN", "Perkalian", "Kali", "×", true),
+    PEMBAGIAN("PEMBAGIAN", "Pembagian", "Bagi", "÷", true),
+    CAMPURAN("CAMPURAN", "Campuran", "Campur", "±", true),
+    SOAL_CERITA("SOAL_CERITA", "Soal Cerita AKM", "Cerita", "?", false),
+    PECAHAN("PECAHAN", "Pecahan & Banding", "Pecahan", "½", false),
+    GEOMETRI("GEOMETRI", "Geometri & Ukur", "Geometri", "△", false),
+    POLA_ALJABAR("POLA_ALJABAR", "Pola & Aljabar", "Pola", "□", false);
 
     companion object {
         fun fromCode(raw: String): MathTopic =
@@ -24,15 +29,32 @@ enum class MathTopic(
     }
 }
 
-enum class ActivityMode(val code: String, val labelId: String) {
-    WORKSHEET("WORKSHEET", "Hitung Bersusun"),
-    BALLOON_GAME("BALLOON_GAME", "Tembak Balon"),
-    SPEED_SPRINT("SPEED_SPRINT", "Tantangan Kilat");
+enum class ActivityMode(
+    val code: String,
+    val labelId: String,
+    val shortLabel: String,
+    val isCurriculumPractice: Boolean = false
+) {
+    WORKSHEET("WORKSHEET", "Hitung Bersusun", "Bersusun", true),
+    STORY_PROBLEM("STORY_PROBLEM", "Soal Cerita AKM", "Soal Cerita", true),
+    FRACTION_COMPARE("FRACTION_COMPARE", "Pecahan & Banding", "Pecahan", true),
+    GEOMETRY_MEASURE("GEOMETRY_MEASURE", "Geometri & Ukur", "Geometri", true),
+    PATTERN_ALGEBRA("PATTERN_ALGEBRA", "Pola & Aljabar", "Pola", true),
+    BALLOON_GAME("BALLOON_GAME", "Tembak Balon", "Balon", false),
+    SPEED_SPRINT("SPEED_SPRINT", "Tantangan Kilat", "Kilat", false);
 
     companion object {
+        val learningModes: List<ActivityMode> = entries.filter { it.isCurriculumPractice }
+
         fun fromCode(raw: String): ActivityMode =
             entries.firstOrNull { it.code == raw } ?: WORKSHEET
     }
+}
+
+fun curriculumPhaseForGrade(grade: Int): String = when (grade.coerceIn(1, 6)) {
+    1, 2 -> "Fase A"
+    3, 4 -> "Fase B"
+    else -> "Fase C"
 }
 
 enum class RewardStatus(val code: String, val labelId: String) {
@@ -136,6 +158,7 @@ object RewardCatalog {
     val badges = listOf(
         AchievementBadge("first_step", "Langkah Pertama", "Selesaikan latihan pertama", "flag"),
         AchievementBadge("stack_master", "Jagoan Bersusun", "Selesaikan 15 soal latihan", "calculate"),
+        AchievementBadge("curriculum_explorer", "Penjelajah Kurikulum", "Coba mode Kurikulum Merdeka", "school"),
         AchievementBadge("accuracy_ace", "Teliti 90%+", "Raih nilai sempurna di satu sesi", "verified"),
         AchievementBadge("star_collector", "Kolektor 200 Bintang", "Kumpulkan 200 bintang reward", "star"),
         AchievementBadge("game_champion", "Juara Game", "Mainkan game edukasi matematika", "sports_esports"),
@@ -153,6 +176,13 @@ object RewardCatalog {
         val result = currentBadges.toMutableSet()
         if (totalSolved >= 1L) result.add("first_step")
         if (totalSolved >= 15L) result.add("stack_master")
+        if (sessionMode == ActivityMode.STORY_PROBLEM ||
+            sessionMode == ActivityMode.FRACTION_COMPARE ||
+            sessionMode == ActivityMode.GEOMETRY_MEASURE ||
+            sessionMode == ActivityMode.PATTERN_ALGEBRA
+        ) {
+            result.add("curriculum_explorer")
+        }
         if (sessionTotal > 0 && sessionCorrect == sessionTotal) result.add("accuracy_ace")
         if (totalStars >= 200L) result.add("star_collector")
         if (sessionMode == ActivityMode.BALLOON_GAME || sessionMode == ActivityMode.SPEED_SPRINT) {

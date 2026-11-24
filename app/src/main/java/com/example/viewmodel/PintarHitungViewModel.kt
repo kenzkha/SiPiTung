@@ -47,6 +47,9 @@ class PintarHitungViewModel(
     private val _selectedTopic = MutableStateFlow(MathTopic.PENGURANGAN)
     val selectedTopic: StateFlow<MathTopic> = _selectedTopic.asStateFlow()
 
+    private val _selectedLearningMode = MutableStateFlow(ActivityMode.WORKSHEET)
+    val selectedLearningMode: StateFlow<ActivityMode> = _selectedLearningMode.asStateFlow()
+
     private val _snackbarMessage = MutableStateFlow<String?>(null)
     val snackbarMessage: StateFlow<String?> = _snackbarMessage.asStateFlow()
 
@@ -129,8 +132,18 @@ class PintarHitungViewModel(
         _selectedTopic.value = topic
     }
 
+    fun selectLearningMode(mode: ActivityMode) {
+        _selectedLearningMode.value = mode
+    }
+
     fun openWorksheetWithTopic(topic: MathTopic) {
         _selectedTopic.value = topic
+        _selectedLearningMode.value = ActivityMode.WORKSHEET
+        _selectedTab.value = MainTab.BELAJAR
+    }
+
+    fun openLearningMode(mode: ActivityMode) {
+        _selectedLearningMode.value = mode
         _selectedTab.value = MainTab.BELAJAR
     }
 
